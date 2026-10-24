@@ -1,0 +1,258 @@
+{
+  "$id": "https://github.com/sumitrmardy/google-ads-monitor-api/schema/output.schema.json",
+  "title": "Google ad",
+  "description": "One record per Google ad (creative) from the Google Ads Transparency Center. Every key is present on every record and no value is ever null: empty strings, empty arrays and 0 stand for 'none'. In monitor mode the dataset holds only ads Google first showed since the previous run for that target.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "target",
+    "targetType",
+    "region",
+    "advertiserId",
+    "advertiserName",
+    "creativeId",
+    "adUrl",
+    "format",
+    "landingDomain",
+    "firstShown",
+    "lastShown",
+    "daysServed",
+    "regions",
+    "variations",
+    "headline",
+    "description",
+    "displayUrl",
+    "landingUrl",
+    "callToAction",
+    "videoUrl",
+    "copySource",
+    "copyLanguage",
+    "previewImageUrl",
+    "previewScriptUrl",
+    "checkedAt"
+  ],
+  "properties": {
+    "target": {
+      "type": "string",
+      "title": "Target",
+      "description": "The input line this ad was found for, exactly as given (domain, advertiser ID or Transparency Center URL).",
+      "examples": [
+        "hubspot.com"
+      ]
+    },
+    "targetType": {
+      "type": "string",
+      "enum": [
+        "domain",
+        "advertiser"
+      ],
+      "title": "Target type",
+      "description": "'domain': a landing-domain search, which also finds resellers and agencies advertising that domain. 'advertiser': one advertiser account.",
+      "examples": [
+        "domain"
+      ]
+    },
+    "region": {
+      "type": "string",
+      "title": "Region filter",
+      "description": "ISO 3166-1 alpha-2 country the listing was filtered to, or 'anywhere'.",
+      "examples": [
+        "US"
+      ]
+    },
+    "advertiserId": {
+      "type": "string",
+      "title": "Advertiser ID",
+      "description": "Google Ads advertiser ID (starts with AR). Stable; use it to filter a domain search down to one advertiser.",
+      "examples": [
+        "AR10072600183532683265"
+      ]
+    },
+    "advertiserName": {
+      "type": "string",
+      "title": "Advertiser",
+      "description": "Verified legal name of the advertiser as shown by Google.",
+      "examples": [
+        "Hubspot, Inc."
+      ]
+    },
+    "creativeId": {
+      "type": "string",
+      "title": "Creative ID",
+      "description": "Google's ID of this ad (starts with CR). Stable across days; the unique key of a record.",
+      "examples": [
+        "CR02685094814793334785"
+      ]
+    },
+    "adUrl": {
+      "type": "string",
+      "title": "Ad page",
+      "description": "Link to this ad on the Google Ads Transparency Center.",
+      "examples": [
+        "https://adstransparency.google.com/advertiser/AR10072600183532683265/creative/CR02685094814793334785"
+      ]
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "TEXT",
+        "IMAGE",
+        "VIDEO",
+        "UNKNOWN"
+      ],
+      "title": "Format",
+      "description": "TEXT (search ads), IMAGE (display banners) or VIDEO (YouTube). UNKNOWN for a format Google has not been seen to use.",
+      "examples": [
+        "TEXT"
+      ]
+    },
+    "landingDomain": {
+      "type": "string",
+      "title": "Landing domain",
+      "description": "Domain the ad sends people to: the searched domain for domain targets; for advertiser targets, taken from the landing URL or else the display URL. Empty when the ad shows neither.",
+      "examples": [
+        "hubspot.com"
+      ]
+    },
+    "firstShown": {
+      "type": "string",
+      "title": "First shown",
+      "description": "ISO 8601 time Google first showed the ad. Monitor mode uses this, not 'first time we saw it', to decide what is new.",
+      "examples": [
+        "2026-01-29T08:00:00.000Z"
+      ]
+    },
+    "lastShown": {
+      "type": "string",
+      "title": "Last shown",
+      "description": "ISO 8601 time Google last showed the ad. Recent means still running.",
+      "examples": [
+        "2026-10-20T05:32:10.000Z"
+      ]
+    },
+    "daysServed": {
+      "type": "integer",
+      "title": "Days served",
+      "description": "Number of days Google has served the ad.",
+      "examples": [
+        264
+      ]
+    },
+    "regions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Served in",
+      "description": "ISO 3166-1 alpha-2 codes of the countries the ad was served in.",
+      "examples": [
+        [
+          "US",
+          "CA"
+        ]
+      ]
+    },
+    "variations": {
+      "type": "integer",
+      "title": "Variations",
+      "description": "Number of variations Google keeps for this ad (asset combinations).",
+      "examples": [
+        1
+      ]
+    },
+    "headline": {
+      "type": "string",
+      "title": "Headline",
+      "description": "Ad headline. Text ads: read from Google's archived screenshot (OCR). Video and image ads: from the ad's own data; for app-install ads, the app name. Empty when the ad has no readable text.",
+      "examples": [
+        "HubSpot for Startups - Bootstrap to Series A"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "description": "Ad description (body text), same sources as headline. Empty when none.",
+      "examples": [
+        "Partnered with top VCs and accelerators. Get exclusive startup pricing and resources. From..."
+      ]
+    },
+    "displayUrl": {
+      "type": "string",
+      "title": "Display URL",
+      "description": "URL as printed on the ad (not necessarily where it lands).",
+      "examples": [
+        "www.hubspot.com/"
+      ]
+    },
+    "landingUrl": {
+      "type": "string",
+      "title": "Landing URL",
+      "description": "Full click-through URL from the ad's own data (video and some image ads; app store listing for app-install ads). Empty for text ads read from a screenshot.",
+      "examples": [
+        "https://www.hubspot.fr/crm/e010a-7-0"
+      ]
+    },
+    "callToAction": {
+      "type": "string",
+      "title": "Call to action",
+      "description": "Button text of video and image ads, in the ad's language. Empty when none.",
+      "examples": [
+        "En savoir plus"
+      ]
+    },
+    "videoUrl": {
+      "type": "string",
+      "title": "Video",
+      "description": "YouTube link of a video ad. Empty for other formats.",
+      "examples": [
+        "https://www.youtube.com/watch?v=wTEjgF1qocM"
+      ]
+    },
+    "copySource": {
+      "type": "string",
+      "enum": [
+        "ocr",
+        "contentjs",
+        "none"
+      ],
+      "title": "Copy source",
+      "description": "Where headline/description came from: 'ocr' (text read from the archived screenshot), 'contentjs' (the ad's own data), or 'none' (no copy available).",
+      "examples": [
+        "ocr"
+      ]
+    },
+    "copyLanguage": {
+      "type": "string",
+      "title": "OCR language",
+      "description": "Tesseract language pack that read the copy (e.g. 'eng', 'jpn+eng'); empty when copy did not come from OCR.",
+      "examples": [
+        "eng"
+      ]
+    },
+    "previewImageUrl": {
+      "type": "string",
+      "title": "Preview image",
+      "description": "URL of Google's archived screenshot of the ad, when it has one.",
+      "examples": [
+        "https://tpc.googlesyndication.com/archive/simgad/12284280382862371734"
+      ]
+    },
+    "previewScriptUrl": {
+      "type": "string",
+      "title": "Preview script",
+      "description": "URL of Google's interactive preview of the ad (content.js), when it has one.",
+      "examples": [
+        ""
+      ]
+    },
+    "checkedAt": {
+      "type": "string",
+      "title": "Checked at",
+      "description": "ISO 8601 time this target was checked in this run.",
+      "examples": [
+        "2026-10-20T06:48:02.980Z"
+      ]
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

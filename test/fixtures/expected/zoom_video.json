@@ -1,0 +1,31 @@
+{
+  "target": "zoom.us",
+  "targetType": "domain",
+  "region": "anywhere",
+  "advertiserId": "AR09876543210987654321",
+  "advertiserName": "Zoom Video Communications, Inc.",
+  "creativeId": "CR11223344556677889900",
+  "adUrl": "https://adstransparency.google.com/advertiser/AR09876543210987654321/creative/CR11223344556677889900",
+  "format": "VIDEO",
+  "landingDomain": "zoom.us",
+  "firstShown": "2026-05-15T12:00:00.000Z",
+  "lastShown": "2026-10-24T00:00:00.000Z",
+  "daysServed": 160,
+  "regions": [
+    "US",
+    "GB",
+    "DE"
+  ],
+  "variations": 3,
+  "headline": "One Platform for Limitless Human Connection",
+  "description": "Modernize your workflows with AI Companion included at no additional cost.",
+  "displayUrl": "zoom.us",
+  "landingUrl": "https://zoom.us/pricing",
+  "callToAction": "Learn More",
+  "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "copySource": "contentjs",
+  "copyLanguage": "eng",
+  "previewImageUrl": "",
+  "previewScriptUrl": "https://tpc.googlesyndication.com/archive/contentjs/12345",
+  "checkedAt": "2026-10-24T12:00:00.000Z"
+}

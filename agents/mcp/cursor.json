@@ -1,0 +1,15 @@
+{
+  "_comment": ".cursor/mcp.json. Add to your Cursor configuration.",
+  "mcpServers": {
+    "google-ads-monitor": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.apify.com?tools=sumitr_mardy/google-ads-monitor",
+        "--header",
+        "Authorization: Bearer YOUR_APIFY_TOKEN"
+      ]
+    }
+  }
+}

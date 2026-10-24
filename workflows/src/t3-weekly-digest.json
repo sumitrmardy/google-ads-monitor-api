@@ -1,0 +1,134 @@
+{
+  "name": "__i18n.t3.name__",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "__i18n.t3.sticky__",
+        "height": 520,
+        "width": 380,
+        "color": 4
+      },
+      "id": "t3-sticky",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "t3-schedule",
+      "name": "__i18n.t3.scheduleName__",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/__link.actorId__/run-sync-get-dataset-items",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"targets\": [\n    \"hubspot.com\",\n    \"zoom.us\"\n  ],\n  \"mode\": \"monitor\",\n  \"lookbackDays\": 7,\n  \"monitorName\": \"weekly-digest\"\n}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "t3-fetch",
+      "name": "__i18n.t3.fetchAdsName__",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        100
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "apify-api",
+          "name": "Apify API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const ads = $input.all().map(i => i.json);\nlet html = '<h2>Weekly Competitor Ads Intelligence Digest</h2><ul>';\nfor (const ad of ads) {\n  html += `<li><b>${ad.advertiserName || ad.target}</b> (${ad.format}): ${ad.headline || 'No headline'} — <a href=\"${ad.adUrl}\">View Ad</a></li>`;\n}\nhtml += '</ul>';\nreturn [{ json: { html, total: ads.length } }];"
+      },
+      "id": "t3-digest",
+      "name": "__i18n.t3.htmlDigestName__",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "digest@example.com",
+        "toEmail": "team@example.com",
+        "subject": "=Weekly Competitor Google Ads Digest ({{ $json.total }} ads)",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "t3-email",
+      "name": "__i18n.t3.emailName__",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1040,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "__i18n.t3.scheduleName__": {
+      "main": [
+        [
+          {
+            "node": "__i18n.t3.fetchAdsName__",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "__i18n.t3.fetchAdsName__": {
+      "main": [
+        [
+          {
+            "node": "__i18n.t3.htmlDigestName__",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "__i18n.t3.htmlDigestName__": {
+      "main": [
+        [
+          {
+            "node": "__i18n.t3.emailName__",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

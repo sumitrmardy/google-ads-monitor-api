@@ -1,0 +1,18 @@
+{
+  "_comment": "claude_desktop_config.json. Restart Claude Desktop after editing.",
+  "mcpServers": {
+    "google-ads-monitor": {
+      "url": "https://mcp.apify.com?tools=sumitr_mardy/google-ads-monitor"
+    },
+    "google-ads-monitor-with-token": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.apify.com?tools=sumitr_mardy/google-ads-monitor",
+        "--header",
+        "Authorization: Bearer YOUR_APIFY_TOKEN"
+      ]
+    }
+  }
+}

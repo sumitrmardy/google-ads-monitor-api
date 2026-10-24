@@ -1,0 +1,137 @@
+{
+  "name": "AI Agent tool: what Google ads is a competitor running?",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# Give an AI Agent access to Google Ads intelligence\n\nEquips an AI Agent with a tool to inspect live and historical Google ads for any competitor domain or advertiser ID. Ask: *\"What search ads is Monday.com running right now?\"*\n\n## Setup (once)\n\n**1. Get an Apify token** — https://console.apify.com/settings/integrations\n\n**2. Create the n8n credential**\nCredentials → New → **Header Auth**\n- Name: `Apify API`\n- Header name: `Authorization`\n- Header value: `Bearer YOUR_APIFY_TOKEN`\n\nEvery HTTP node here points at that credential by name. No token is stored in this file.\n\n## OCR & copy coverage\n96% of Google text ads exist only as screenshot images. The tool returns OCR-extracted headlines and descriptions with color segmentation, so the LLM can analyze actual ad copy.\n\n## Cost\n\nPay-per-event: from $0.70 per 1,000 ads returned ($0.0012 on Free down to $0.0007 on Gold) plus $0.01 per competitor checked in monitor mode. Only ads genuinely new (judged by Google firstShown date) are returned.\n\nCurrent pricing: https://apify.com/sumitr_mardy/google-ads-monitor/pricing\n\nActor: https://apify.com/sumitr_mardy/google-ads-monitor\nTemplates & docs: https://github.com/sumitrmardy/google-ads-monitor-api",
+        "height": 800,
+        "width": 420,
+        "color": 4
+      },
+      "id": "t4-sticky",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "t4-chat",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        340,
+        60
+      ],
+      "webhookId": "google-ads-analyst-agent"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a competitive intelligence and digital advertising analyst. When asked about a competitor's Google ads, call the Google Ads Intelligence Tool. Analyze their messaging strategy, value propositions, headlines, call-to-actions, and targeted countries. Highlight recent campaigns and format breakdown (TEXT, IMAGE, VIDEO)."
+        }
+      },
+      "id": "t4-agent",
+      "name": "Competitor Ad Analyst Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        600,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "t4-model",
+      "name": "Chat model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        520,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Searches Google Ads Transparency Center for active ads, copy, and creative history for competitor domains or advertiser IDs. Provide targets in `targets`.",
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/sumitr_mardy~google-ads-monitor/run-sync-get-dataset-items",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"targets\": {targets},\n  \"mode\": \"all\",\n  \"maxAdsPerTarget\": 5\n}",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "targets",
+              "description": "A JSON array of domains or advertiser IDs to check, e.g. [\"monday.com\"].",
+              "type": "json"
+            }
+          ]
+        },
+        "optimizeResponse": false
+      },
+      "id": "t4-tool",
+      "name": "Google Ads Intelligence Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        760,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "apify-api",
+          "name": "Apify API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Competitor Ad Analyst Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Competitor Ad Analyst Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Ads Intelligence Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Competitor Ad Analyst Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

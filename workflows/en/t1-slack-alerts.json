@@ -1,0 +1,164 @@
+{
+  "name": "Daily competitor Google Ad alerts to Slack",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# Daily Google Ad Slack Alerts\n\nRuns on a daily schedule in `monitor` mode. Checks competitor domains on the Google Ads Transparency Center and posts a Slack message whenever a competitor launches a genuinely new ad.\n\n## Setup (once)\n\n**1. Get an Apify token** — https://console.apify.com/settings/integrations\n\n**2. Create the n8n credential**\nCredentials → New → **Header Auth**\n- Name: `Apify API`\n- Header name: `Authorization`\n- Header value: `Bearer YOUR_APIFY_TOKEN`\n\nEvery HTTP node here points at that credential by name. No token is stored in this file.\n\n## Why monitor mode doesn't flood Slack\nGoogle sorts ads by last-shown date, which causes old ads to resurface constantly. This Actor anchors on `firstShown`, so only genuinely new creatives trigger an alert (~0.4 ads per domain per day).\n\n## Cost\n\nPay-per-event: from $0.70 per 1,000 ads returned ($0.0012 on Free down to $0.0007 on Gold) plus $0.01 per competitor checked in monitor mode. Only ads genuinely new (judged by Google firstShown date) are returned.\n\nCurrent pricing: https://apify.com/sumitr_mardy/google-ads-monitor/pricing\n\nActor: https://apify.com/sumitr_mardy/google-ads-monitor\nTemplates & docs: https://github.com/sumitrmardy/google-ads-monitor-api",
+        "height": 520,
+        "width": 380,
+        "color": 4
+      },
+      "id": "t1-sticky",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "t1-schedule",
+      "name": "Daily Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/sumitr_mardy~google-ads-monitor/run-sync-get-dataset-items",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"targets\": [\"hubspot.com\", \"zoom.us\"],\n  \"mode\": \"monitor\"\n}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "t1-check",
+      "name": "Check competitor ads (Apify)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        100
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "apify-api",
+          "name": "Apify API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bc19dbf6-068e-4ef9-b4b9-5a17391518bc",
+              "leftValue": "={{ $json.creativeId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "t1-filter",
+      "name": "Filter new ads",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        800,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#competitor-ads",
+          "mode": "name"
+        },
+        "text": "=🚨 *New Google Ad Detected for {{ $json.target }}*\n*Advertiser:* {{ $json.advertiserName }}\n*Format:* {{ $json.format }}\n*Headline:* {{ $json.headline || 'N/A' }}\n*Description:* {{ $json.description || 'N/A' }}\n*Link:* {{ $json.adUrl }}",
+        "otherOptions": {}
+      },
+      "id": "t1-slack",
+      "name": "Send Slack Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        100
+      ],
+      "credentials": {
+        "slackApi": {
+          "id": "slack-bot",
+          "name": "Slack Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check competitor ads (Apify)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check competitor ads (Apify)": {
+      "main": [
+        [
+          {
+            "node": "Filter new ads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter new ads": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

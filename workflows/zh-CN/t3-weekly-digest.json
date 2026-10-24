@@ -1,0 +1,134 @@
+{
+  "name": "每周竞品 Google 广告投放情报邮件简报",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# 每周竞品广告情报邮件简报\n\n每周一上午 9 点运行。自动汇总竞品在过去 7 天内新上线的所有投放广告，生成 HTML 格式的分析简报并通过邮件发送。\n\n## 配置（仅需一次）\n\n**1. 获取 Apify Token** — https://console.apify.com/settings/integrations\n\n**2. 创建 n8n 凭据**\n凭据 → 新建 → **Header Auth**\n- 名称: `Apify API`\n- Header name: `Authorization`\n- Header value: `Bearer 你的_APIFY_TOKEN`\n\n所有 HTTP 节点均已配置指向该凭据，工作流文件中不包含任何密钥。\n\n## 计费说明\n\n按事件付费：每返回 1,000 条广告从 $0.70 起（Free 阶梯 $0.0012，Gold 阶梯低至 $0.0007），监控模式每次竞品检测 $0.01。仅返回 Google 官方 firstShown 时间确属新上线的广告。\n\n当前价格详情：https://apify.com/sumitr_mardy/google-ads-monitor/pricing\n\nActor 页面：https://apify.com/sumitr_mardy/google-ads-monitor\n模板与开源仓库：https://github.com/sumitrmardy/google-ads-monitor-api",
+        "height": 520,
+        "width": 380,
+        "color": 4
+      },
+      "id": "t3-sticky",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "t3-schedule",
+      "name": "每周定时触发器",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/sumitr_mardy~google-ads-monitor/run-sync-get-dataset-items",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"targets\": [\n    \"hubspot.com\",\n    \"zoom.us\"\n  ],\n  \"mode\": \"monitor\",\n  \"lookbackDays\": 7,\n  \"monitorName\": \"weekly-digest\"\n}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "t3-fetch",
+      "name": "拉取本周新广告 (Apify)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        100
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "apify-api",
+          "name": "Apify API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const ads = $input.all().map(i => i.json);\nlet html = '<h2>Weekly Competitor Ads Intelligence Digest</h2><ul>';\nfor (const ad of ads) {\n  html += `<li><b>${ad.advertiserName || ad.target}</b> (${ad.format}): ${ad.headline || 'No headline'} — <a href=\"${ad.adUrl}\">View Ad</a></li>`;\n}\nhtml += '</ul>';\nreturn [{ json: { html, total: ads.length } }];"
+      },
+      "id": "t3-digest",
+      "name": "构建 HTML 简报内容",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "digest@example.com",
+        "toEmail": "team@example.com",
+        "subject": "=Weekly Competitor Google Ads Digest ({{ $json.total }} ads)",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "t3-email",
+      "name": "发送简报邮件",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1040,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "每周定时触发器": {
+      "main": [
+        [
+          {
+            "node": "拉取本周新广告 (Apify)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "拉取本周新广告 (Apify)": {
+      "main": [
+        [
+          {
+            "node": "构建 HTML 简报内容",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "构建 HTML 简报内容": {
+      "main": [
+        [
+          {
+            "node": "发送简报邮件",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "name": "每日竞品 Google 广告上线 Slack 预警",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# 每日竞品 Google 广告 Slack 监控预警\n\n以定时任务形式在 `monitor` 监控模式下每日运行。检测 Google 广告透明度中心中的竞品域名，一旦上线新广告即时向 Slack 推送预警。\n\n## 配置（仅需一次）\n\n**1. 获取 Apify Token** — https://console.apify.com/settings/integrations\n\n**2. 创建 n8n 凭据**\n凭据 → 新建 → **Header Auth**\n- 名称: `Apify API`\n- Header name: `Authorization`\n- Header value: `Bearer 你的_APIFY_TOKEN`\n\n所有 HTTP 节点均已配置指向该凭据，工作流文件中不包含任何密钥。\n\n## 为什么监控模式不会消息泛滥\nGoogle 默认按最后展示时间排序，旧广告经常因偶发曝光重新浮至首页。本 Actor 锚定 `firstShown` 首次展示时间，仅上报真正的新广告（平均每域名每天约 0.4 条）。\n\n## 计费说明\n\n按事件付费：每返回 1,000 条广告从 $0.70 起（Free 阶梯 $0.0012，Gold 阶梯低至 $0.0007），监控模式每次竞品检测 $0.01。仅返回 Google 官方 firstShown 时间确属新上线的广告。\n\n当前价格详情：https://apify.com/sumitr_mardy/google-ads-monitor/pricing\n\nActor 页面：https://apify.com/sumitr_mardy/google-ads-monitor\n模板与开源仓库：https://github.com/sumitrmardy/google-ads-monitor-api",
+        "height": 520,
+        "width": 380,
+        "color": 4
+      },
+      "id": "t1-sticky",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "t1-schedule",
+      "name": "每日定时触发器",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/sumitr_mardy~google-ads-monitor/run-sync-get-dataset-items",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"targets\": [\"hubspot.com\", \"zoom.us\"],\n  \"mode\": \"monitor\"\n}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "t1-check",
+      "name": "检测竞品广告 (Apify)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        100
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "apify-api",
+          "name": "Apify API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bc19dbf6-068e-4ef9-b4b9-5a17391518bc",
+              "leftValue": "={{ $json.creativeId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "t1-filter",
+      "name": "过滤新增广告",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        800,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#competitor-ads",
+          "mode": "name"
+        },
+        "text": "=🚨 *New Google Ad Detected for {{ $json.target }}*\n*Advertiser:* {{ $json.advertiserName }}\n*Format:* {{ $json.format }}\n*Headline:* {{ $json.headline || 'N/A' }}\n*Description:* {{ $json.description || 'N/A' }}\n*Link:* {{ $json.adUrl }}",
+        "otherOptions": {}
+      },
+      "id": "t1-slack",
+      "name": "发送 Slack 预警通知",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        100
+      ],
+      "credentials": {
+        "slackApi": {
+          "id": "slack-bot",
+          "name": "Slack Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "每日定时触发器": {
+      "main": [
+        [
+          {
+            "node": "检测竞品广告 (Apify)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "检测竞品广告 (Apify)": {
+      "main": [
+        [
+          {
+            "node": "过滤新增广告",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "过滤新增广告": {
+      "main": [
+        [
+          {
+            "node": "发送 Slack 预警通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

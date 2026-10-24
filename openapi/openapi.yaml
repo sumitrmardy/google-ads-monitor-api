@@ -1,0 +1,49 @@
+openapi: 3.0.3
+info:
+  title: Google Ads Monitor API
+  description: Track competitor Google ads, launch dates, and OCR-extracted copy via Transparency Center.
+  version: 1.0.0
+servers:
+  - url: https://api.apify.com/v2
+paths:
+  /acts/sumitr_mardy~google-ads-monitor/run-sync-get-dataset-items:
+    post:
+      summary: Fetch or monitor competitor Google ads synchronously
+      operationId: monitorGoogleAds
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - targets
+              properties:
+                targets:
+                  type: array
+                  items:
+                    type: string
+                  description: Domains or advertiser IDs to monitor.
+                mode:
+                  type: string
+                  enum: [monitor, all]
+                  default: all
+                region:
+                  type: string
+                  default: anywhere
+      responses:
+        '200':
+          description: Array of Google ad records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

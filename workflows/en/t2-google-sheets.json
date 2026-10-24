@@ -1,0 +1,169 @@
+{
+  "name": "Log competitor Google Ads and ad copy to Google Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# Log Competitor Ads to Google Sheets\n\nMonitors competitor advertising campaigns and appends new ad creatives to Google Sheets, including OCR-extracted headlines, descriptions, landing URLs, and active regions.\n\n## Columns in your sheet\n`advertiser` · `format` · `headline` · `description` · `display_url` · `first_shown` · `ad_url` · `logged_at`\n\n## Setup (once)\n\n**1. Get an Apify token** — https://console.apify.com/settings/integrations\n\n**2. Create the n8n credential**\nCredentials → New → **Header Auth**\n- Name: `Apify API`\n- Header name: `Authorization`\n- Header value: `Bearer YOUR_APIFY_TOKEN`\n\nEvery HTTP node here points at that credential by name. No token is stored in this file.\n\n## Cost\n\nPay-per-event: from $0.70 per 1,000 ads returned ($0.0012 on Free down to $0.0007 on Gold) plus $0.01 per competitor checked in monitor mode. Only ads genuinely new (judged by Google firstShown date) are returned.\n\nCurrent pricing: https://apify.com/sumitr_mardy/google-ads-monitor/pricing\n\nActor: https://apify.com/sumitr_mardy/google-ads-monitor\nTemplates & docs: https://github.com/sumitrmardy/google-ads-monitor-api",
+        "height": 520,
+        "width": 380,
+        "color": 4
+      },
+      "id": "t2-sticky",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -60
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "t2-trigger-manual",
+      "name": "When clicking 'Execute workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9627b5e7-4050-4a0c-82a2-4de483e2921f",
+              "name": "target",
+              "value": "hubspot.com",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "t2-trigger",
+      "name": "Competitors input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/sumitr_mardy~google-ads-monitor/run-sync-get-dataset-items",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ targets: [ $json.target ], mode: 'monitor' }) }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "t2-check",
+      "name": "Fetch new ads (Apify)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        100
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "apify-api",
+          "name": "Apify API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => ({\n  json: {\n    advertiser: item.json.advertiserName || '',\n    format: item.json.format || '',\n    headline: item.json.headline || '',\n    description: item.json.description || '',\n    display_url: item.json.displayUrl || '',\n    first_shown: item.json.firstShown || '',\n    ad_url: item.json.adUrl || '',\n    logged_at: new Date().toISOString()\n  }\n}));"
+      },
+      "id": "t2-format",
+      "name": "Format ad rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData"
+        }
+      },
+      "id": "t2-sheet",
+      "name": "Append to Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1040,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "Competitors input": {
+      "main": [
+        [
+          {
+            "node": "Fetch new ads (Apify)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch new ads (Apify)": {
+      "main": [
+        [
+          {
+            "node": "Format ad rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format ad rows": {
+      "main": [
+        [
+          {
+            "node": "Append to Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking 'Execute workflow'": {
+      "main": [
+        [
+          {
+            "node": "Competitors input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

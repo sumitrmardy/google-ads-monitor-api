@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/sumitrmardy/google-ads-monitor-api/schema/input.schema.json",
+  "title": "Google Ads Monitor — input body",
+  "type": "object",
+  "properties": {
+    "targets": {
+      "title": "Competitors to track",
+      "type": "array",
+      "editor": "stringList",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^\\s*(?:[Aa][Rr]\\d{15,25}|(?:https?://)?(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\\.)+[A-Za-z][A-Za-z0-9-]{1,62}(?:[/?#]\\S*)?)\\s*$"
+      },
+      "description": "Competitors to check, one per item: a domain (\"hubspot.com\"), a Google advertiser ID (\"AR10072600183532683265\"), or a Google Ads Transparency Center URL (advertiser, creative or domain search). A domain finds every advertiser whose ads land on it, resellers and agencies included; every output record names its advertiser. Example: [\"hubspot.com\", \"AR10072600183532683265\"].",
+      "prefill": [
+        "hubspot.com",
+        "zoom.us"
+      ]
+    },
+    "mode": {
+      "title": "Mode",
+      "type": "string",
+      "editor": "select",
+      "enum": [
+        "monitor",
+        "all"
+      ],
+      "enumTitles": [
+        "Monitor: only ads first shown since the last run",
+        "All: every ad, up to the limit below"
+      ],
+      "default": "monitor",
+      "description": "\"monitor\" (default): only ads Google first showed since the previous run for each target, judged by Google's own first-shown date; built for daily or hourly schedules, and a target's first run looks back lookbackDays. \"all\": the target's ads, most recently shown first, up to maxAdsPerTarget; use it for a one-off look at what a competitor is running."
+    },
+    "region": {
+      "title": "Region",
+      "type": "string",
+      "editor": "textfield",
+      "default": "anywhere",
+      "description": "Two-letter ISO country code (US, GB, DE, JP, VN...) to see only ads served in that country, or \"anywhere\" for all countries. A region inside a pasted Transparency Center URL takes precedence.",
+      "pattern": "^(?:[Aa]nywhere|[Aa][Dd]|[Aa][Ee]|[Aa][Ff]|[Aa][Gg]|[Aa][Ii]|[Aa][Ll]|[Aa][Mm]|[Aa][Oo]|[Aa][Qq]|[Aa][Rr]|[Aa][Ss]|[Aa][Tt]|[Aa][Uu]|[Aa][Ww]|[Aa][Xx]|[Aa][Zz]|[Bb][Aa]|[Bb][Bb]|[Bb][Dd]|[Bb][Ee]|[Bb][Ff]|[Bb][Gg]|[Bb][Hh]|[Bb][Ii]|[Bb][Jj]|[Bb][Ll]|[Bb][Mm]|[Bb][Nn]|[Bb][Oo]|[Bb][Qq]|[Bb][Rr]|[Bb][Ss]|[Bb][Tt]|[Bb][Vv]|[Bb][Ww]|[Bb][Yy]|[Bb][Zz]|[Cc][Aa]|[Cc][Cc]|[Cc][Dd]|[Cc][Ff]|[Cc][Gg]|[Cc][Hh]|[Cc][Ii]|[Cc][Kk]|[Cc][Ll]|[Cc][Mm]|[Cc][Nn]|[Cc][Oo]|[Cc][Rr]|[Cc][Uu]|[Cc][Vv]|[Cc][Ww]|[Cc][Xx]|[Cc][Yy]|[Cc][Zz]|[Dd][Ee]|[Dd][Jj]|[Dd][Kk]|[Dd][Mm]|[Dd][Oo]|[Dd][Zz]|[Ee][Cc]|[Ee][Ee]|[Ee][Gg]|[Ee][Hh]|[Ee][Rr]|[Ee][Ss]|[Ee][Tt]|[Ff][Ii]|[Ff][Jj]|[Ff][Kk]|[Ff][Mm]|[Ff][Oo]|[Ff][Rr]|[Gg][Aa]|[Gg][Bb]|[Gg][Dd]|[Gg][Ee]|[Gg][Ff]|[Gg][Gg]|[Gg][Hh]|[Gg][Ii]|[Gg][Ll]|[Gg][Mm]|[Gg][Nn]|[Gg][Pp]|[Gg][Qq]|[Gg][Rr]|[Gg][Ss]|[Gg][Tt]|[Gg][Uu]|[Gg][Ww]|[Gg][Yy]|[Hh][Kk]|[Hh][Mm]|[Hh][Nn]|[Hh][Rr]|[Hh][Tt]|[Hh][Uu]|[Ii][Dd]|[Ii][Ee]|[Ii][Ll]|[Ii][Mm]|[Ii][Nn]|[Ii][Oo]|[Ii][Qq]|[Ii][Rr]|[Ii][Ss]|[Ii][Tt]|[Jj][Ee]|[Jj][Mm]|[Jj][Oo]|[Jj][Pp]|[Kk][Ee]|[Kk][Gg]|[Kk][Hh]|[Kk][Ii]|[Kk][Mm]|[Kk][Nn]|[Kk][Pp]|[Kk][Rr]|[Kk][Ww]|[Kk][Yy]|[Kk][Zz]|[Ll][Aa]|[Ll][Bb]|[Ll][Cc]|[Ll][Ii]|[Ll][Kk]|[Ll][Rr]|[Ll][Ss]|[Ll][Tt]|[Ll][Uu]|[Ll][Vv]|[Ll][Yy]|[Mm][Aa]|[Mm][Cc]|[Mm][Dd]|[Mm][Ee]|[Mm][Ff]|[Mm][Gg]|[Mm][Hh]|[Mm][Kk]|[Mm][Ll]|[Mm][Mm]|[Mm][Nn]|[Mm][Oo]|[Mm][Pp]|[Mm][Qq]|[Mm][Rr]|[Mm][Ss]|[Mm][Tt]|[Mm][Uu]|[Mm][Vv]|[Mm][Ww]|[Mm][Xx]|[Mm][Yy]|[Mm][Zz]|[Nn][Aa]|[Nn][Cc]|[Nn][Ee]|[Nn][Ff]|[Nn][Gg]|[Nn][Ii]|[Nn][Ll]|[Nn][Oo]|[Nn][Pp]|[Nn][Rr]|[Nn][Uu]|[Nn][Zz]|[Oo][Mm]|[Pp][Aa]|[Pp][Ee]|[Pp][Ff]|[Pp][Gg]|[Pp][Hh]|[Pp][Kk]|[Pp][Ll]|[Pp][Mm]|[Pp][Nn]|[Pp][Rr]|[Pp][Ss]|[Pp][Tt]|[Pp][Ww]|[Pp][Yy]|[Qq][Aa]|[Rr][Ee]|[Rr][Oo]|[Rr][Ss]|[Rr][Uu]|[Rr][Ww]|[Ss][Aa]|[Ss][Bb]|[Ss][Cc]|[Ss][Dd]|[Ss][Ee]|[Ss][Gg]|[Ss][Hh]|[Ss][Ii]|[Ss][Jj]|[Ss][Kk]|[Ss][Ll]|[Ss][Mm]|[Ss][Nn]|[Ss][Oo]|[Ss][Rr]|[Ss][Ss]|[Ss][Tt]|[Ss][Vv]|[Ss][Xx]|[Ss][Yy]|[Ss][Zz]|[Tt][Cc]|[Tt][Dd]|[Tt][Ff]|[Tt][Gg]|[Tt][Hh]|[Tt][Jj]|[Tt][Kk]|[Tt][Ll]|[Tt][Mm]|[Tt][Nn]|[Tt][Oo]|[Tt][Rr]|[Tt][Tt]|[Tt][Vv]|[Tt][Ww]|[Tt][Zz]|[Uu][Aa]|[Uu][Gg]|[Uu][Kk]|[Uu][Mm]|[Uu][Ss]|[Uu][Yy]|[Uu][Zz]|[Vv][Aa]|[Vv][Cc]|[Vv][Ee]|[Vv][Gg]|[Vv][Ii]|[Vv][Nn]|[Vv][Uu]|[Ww][Ff]|[Ww][Ss]|[Yy][Ee]|[Yy][Tt]|[Zz][Aa]|[Zz][Mm]|[Zz][Ww])$"
+    },
+    "lookbackDays": {
+      "title": "Lookback days (first monitor run)",
+      "type": "integer",
+      "default": 7,
+      "minimum": 1,
+      "maximum": 365,
+      "description": "Monitor mode only: how many days back the FIRST run for a target reaches. Later runs start where the previous run ended, so they return only what is new."
+    },
+    "maxAdsPerTarget": {
+      "title": "Max ads per target (All mode)",
+      "type": "integer",
+      "default": 100,
+      "minimum": 1,
+      "description": "All mode only: how many ads to return per target, most recently shown first. Monitor mode always returns every new ad. For a quick answer to an AI agent, keep it small (10-25): reading ad copy takes about a second per ad."
+    },
+    "adCopy": {
+      "title": "Read ad copy",
+      "type": "boolean",
+      "default": true,
+      "description": "Read the ad copy: text ads from Google's archived screenshot (OCR); video and some image ads from their own data (headline, description, call to action, landing URL, YouTube link). Turn off for much faster runs when only IDs, dates and countries are needed."
+    },
+    "monitorName": {
+      "title": "Monitor name",
+      "type": "string",
+      "editor": "textfield",
+      "default": "default",
+      "description": "Monitor mode only. Keeps separate schedules apart: a daily and a weekly schedule on the same targets need different names, or each will treat the other's runs as its own. Any short name."
+    },
+    "maxPagesPerCheck": {
+      "title": "Max pages per target",
+      "type": "integer",
+      "default": 100,
+      "minimum": 1,
+      "description": "Safety cap on how deep one target's listing is read (40 ads per page). Very large advertisers show thousands of ads a day; the run log and SUMMARY say when a target hit the cap.",
+      "sectionCaption": "Advanced"
+    },
+    "concurrency": {
+      "title": "Targets in parallel",
+      "type": "integer",
+      "default": 4,
+      "minimum": 1,
+      "maximum": 10,
+      "description": "How many targets are checked side by side. Pages of a single target are always read in order."
+    },
+    "residentialFallback": {
+      "title": "Switch to residential when blocked",
+      "type": "boolean",
+      "default": true,
+      "description": "When Google keeps blocking the proxy for one target, switch that target to Apify residential proxy for the rest of the run. Included in the price: no extra charge to you."
+    },
+    "proxyConfiguration": {
+      "title": "Proxy",
+      "type": "object",
+      "editor": "proxy",
+      "default": {
+        "useApifyProxy": true
+      },
+      "description": "Apify Proxy (datacenter) by default; the Actor changes IP by itself when Google pushes back. You normally do not need to change this."
+    }
+  },
+  "required": [
+    "targets"
+  ]
+}

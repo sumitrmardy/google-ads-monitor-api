@@ -1,0 +1,26 @@
+{
+  "name": "monitor_google_ads",
+  "description": "Inspects active and newly launched Google ads, ad copy, and creative history for competitor domains or advertiser IDs via Google Ads Transparency Center.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "targets": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "List of domains (e.g. 'hubspot.com') or advertiser IDs (e.g. 'AR10072600183532683265')."
+      },
+      "mode": {
+        "type": "string",
+        "enum": ["monitor", "all"],
+        "default": "all",
+        "description": "'monitor' returns ads launched since last check; 'all' returns most recent ads."
+      },
+      "region": {
+        "type": "string",
+        "default": "anywhere",
+        "description": "Two-letter ISO country code or 'anywhere'."
+      }
+    },
+    "required": ["targets"]
+  }
+}

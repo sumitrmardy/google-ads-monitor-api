@@ -1,0 +1,45 @@
+{
+    "common": {
+        "credentialNote": "## Setup (once)\n\n**1. Get an Apify token** — __link.apifyTokenUrl__\n\n**2. Create the n8n credential**\nCredentials → New → **Header Auth**\n- Name: `Apify API`\n- Header name: `Authorization`\n- Header value: `Bearer YOUR_APIFY_TOKEN`\n\nEvery HTTP node here points at that credential by name. No token is stored in this file.",
+        "costNote": "## Cost\n\nPay-per-event: from __link.priceFromPer1k__ per 1,000 ads returned ($0.0012 on Free down to $0.0007 on Gold) plus $0.01 per competitor checked in monitor mode. Only ads genuinely new (judged by Google firstShown date) are returned.\n\nCurrent pricing: __link.actorPricingUrl__",
+        "actorNote": "Actor: __link.actorUrl__\nTemplates & docs: __link.repoUrl__"
+    },
+
+    "t1": {
+        "name": "Daily competitor Google Ad alerts to Slack",
+        "sticky": "# Daily Google Ad Slack Alerts\n\nRuns on a daily schedule in `monitor` mode. Checks competitor domains on the Google Ads Transparency Center and posts a Slack message whenever a competitor launches a genuinely new ad.\n\n__i18n.common.credentialNote__\n\n## Why monitor mode doesn't flood Slack\nGoogle sorts ads by last-shown date, which causes old ads to resurface constantly. This Actor anchors on `firstShown`, so only genuinely new creatives trigger an alert (~0.4 ads per domain per day).\n\n__i18n.common.costNote__\n\n__i18n.common.actorNote__",
+        "scheduleName": "Daily Schedule Trigger",
+        "checkAdsName": "Check competitor ads (Apify)",
+        "filterNewName": "Filter new ads",
+        "slackName": "Send Slack Alert"
+    },
+
+    "t2": {
+        "name": "Log competitor Google Ads and ad copy to Google Sheets",
+        "sticky": "# Log Competitor Ads to Google Sheets\n\nMonitors competitor advertising campaigns and appends new ad creatives to Google Sheets, including OCR-extracted headlines, descriptions, landing URLs, and active regions.\n\n## Columns in your sheet\n`advertiser` · `format` · `headline` · `description` · `display_url` · `first_shown` · `ad_url` · `logged_at`\n\n__i18n.common.credentialNote__\n\n__i18n.common.costNote__\n\n__i18n.common.actorNote__",
+        "triggerName": "Competitors input",
+        "checkAdsName": "Fetch new ads (Apify)",
+        "formatName": "Format ad rows",
+        "sheetName": "Append to Google Sheet"
+    },
+
+    "t3": {
+        "name": "Weekly competitor Google Ads intelligence digest email",
+        "sticky": "# Weekly Competitor Ads Email Digest\n\nRuns every Monday at 9 AM. Gathers all newly launched ads across your competitor watch list over the past 7 days, formats an HTML executive digest, and sends it via email.\n\n__i18n.common.credentialNote__\n\n__i18n.common.costNote__\n\n__i18n.common.actorNote__",
+        "scheduleName": "Weekly Schedule Trigger",
+        "fetchAdsName": "Fetch weekly new ads (Apify)",
+        "htmlDigestName": "Build HTML Digest",
+        "emailName": "Send Digest Email"
+    },
+
+    "t4": {
+        "name": "AI Agent tool: what Google ads is a competitor running?",
+        "sticky": "# Give an AI Agent access to Google Ads intelligence\n\nEquips an AI Agent with a tool to inspect live and historical Google ads for any competitor domain or advertiser ID. Ask: *\"What search ads is Monday.com running right now?\"*\n\n__i18n.common.credentialNote__\n\n## OCR & copy coverage\n96% of Google text ads exist only as screenshot images. The tool returns OCR-extracted headlines and descriptions with color segmentation, so the LLM can analyze actual ad copy.\n\n__i18n.common.costNote__\n\n__i18n.common.actorNote__",
+        "chatTriggerName": "When chat message received",
+        "agentName": "Competitor Ad Analyst Agent",
+        "toolName": "Google Ads Intelligence Tool",
+        "modelName": "Chat model",
+        "toolDescription": "Searches Google Ads Transparency Center for active ads, copy, and creative history for competitor domains or advertiser IDs. Provide targets in `targets`.",
+        "systemPrompt": "You are a competitive intelligence and digital advertising analyst. When asked about a competitor's Google ads, call the Google Ads Intelligence Tool. Analyze their messaging strategy, value propositions, headlines, call-to-actions, and targeted countries. Highlight recent campaigns and format breakdown (TEXT, IMAGE, VIDEO)."
+    }
+}

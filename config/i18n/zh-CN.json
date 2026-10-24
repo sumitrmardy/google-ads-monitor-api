@@ -1,0 +1,45 @@
+{
+    "common": {
+        "credentialNote": "## 配置（仅需一次）\n\n**1. 获取 Apify Token** — __link.apifyTokenUrl__\n\n**2. 创建 n8n 凭据**\n凭据 → 新建 → **Header Auth**\n- 名称: `Apify API`\n- Header name: `Authorization`\n- Header value: `Bearer 你的_APIFY_TOKEN`\n\n所有 HTTP 节点均已配置指向该凭据，工作流文件中不包含任何密钥。",
+        "costNote": "## 计费说明\n\n按事件付费：每返回 1,000 条广告从 __link.priceFromPer1k__ 起（Free 阶梯 $0.0012，Gold 阶梯低至 $0.0007），监控模式每次竞品检测 $0.01。仅返回 Google 官方 firstShown 时间确属新上线的广告。\n\n当前价格详情：__link.actorPricingUrl__",
+        "actorNote": "Actor 页面：__link.actorUrl__\n模板与开源仓库：__link.repoUrl__"
+    },
+
+    "t1": {
+        "name": "每日竞品 Google 广告上线 Slack 预警",
+        "sticky": "# 每日竞品 Google 广告 Slack 监控预警\n\n以定时任务形式在 `monitor` 监控模式下每日运行。检测 Google 广告透明度中心中的竞品域名，一旦上线新广告即时向 Slack 推送预警。\n\n__i18n.common.credentialNote__\n\n## 为什么监控模式不会消息泛滥\nGoogle 默认按最后展示时间排序，旧广告经常因偶发曝光重新浮至首页。本 Actor 锚定 `firstShown` 首次展示时间，仅上报真正的新广告（平均每域名每天约 0.4 条）。\n\n__i18n.common.costNote__\n\n__i18n.common.actorNote__",
+        "scheduleName": "每日定时触发器",
+        "checkAdsName": "检测竞品广告 (Apify)",
+        "filterNewName": "过滤新增广告",
+        "slackName": "发送 Slack 预警通知"
+    },
+
+    "t2": {
+        "name": "自动归档竞品 Google 广告及文案至 Google 表格",
+        "sticky": "# 归档竞品广告至 Google 表格\n\n自动监控竞品最新营销投放，将广告素材、OCR 识别的标题文案、落地页链接及投放区域归档至 Google 表格。\n\n## 表格所需列\n`advertiser` · `format` · `headline` · `description` · `display_url` · `first_shown` · `ad_url` · `logged_at`\n\n__i18n.common.credentialNote__\n\n__i18n.common.costNote__\n\n__i18n.common.actorNote__",
+        "triggerName": "输入竞品列表",
+        "checkAdsName": "拉取新增广告 (Apify)",
+        "formatName": "格式化广告行数据",
+        "sheetName": "追加至 Google 表格"
+    },
+
+    "t3": {
+        "name": "每周竞品 Google 广告投放情报邮件简报",
+        "sticky": "# 每周竞品广告情报邮件简报\n\n每周一上午 9 点运行。自动汇总竞品在过去 7 天内新上线的所有投放广告，生成 HTML 格式的分析简报并通过邮件发送。\n\n__i18n.common.credentialNote__\n\n__i18n.common.costNote__\n\n__i18n.common.actorNote__",
+        "scheduleName": "每周定时触发器",
+        "fetchAdsName": "拉取本周新广告 (Apify)",
+        "htmlDigestName": "构建 HTML 简报内容",
+        "emailName": "发送简报邮件"
+    },
+
+    "t4": {
+        "name": "AI Agent 工具：查询竞品正在投放哪些 Google 广告？",
+        "sticky": "# 为 AI Agent 赋予竞品广告情报调研能力\n\n为大模型 Agent 配置工具，支持查询任意竞品域名或广告主 ID 的在投广告与历史素材。例如：*\"分析 Monday.com 最近在 Google 上主推哪些搜索文案？\"*\n\n__i18n.common.credentialNote__\n\n## OCR 与文案覆盖率\nGoogle 文本广告 96% 仅以截图图片形式存档。该工具内置基于颜色分割的高精 OCR，能精准提取标题与描述文案供 LLM 分析。\n\n__i18n.common.costNote__\n\n__i18n.common.actorNote__",
+        "chatTriggerName": "接收聊天消息时",
+        "agentName": "竞品广告分析 Agent",
+        "toolName": "Google 广告情报工具",
+        "modelName": "对话模型",
+        "toolDescription": "在 Google 广告透明度中心中检索竞品域名或广告主 ID 的在投广告、文案及投放历史。在 `targets` 数组中传递目标。",
+        "systemPrompt": "你是一个数字营销与竞品情报分析助手。当用户询问某家竞品的 Google 广告投放时，调用 Google 广告情报工具。深入分析其文案痛点诉求、主打卖点、CTA 按钮及投放国家分布，并按格式（搜索广告、图片广告、视频广告）归纳其策略。"
+    }
+}

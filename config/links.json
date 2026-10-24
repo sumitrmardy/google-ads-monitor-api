@@ -1,0 +1,14 @@
+{
+    "_comment": "Single source for every outbound link and the price string. Nothing else in the repo may hardcode these — scripts/build-workflows.mjs injects them, and scripts/validate.mjs fails the build if a hardcoded Apify URL or price appears anywhere else.",
+    "actorUrl": "https://apify.com/sumitr_mardy/google-ads-monitor",
+    "actorPricingUrl": "https://apify.com/sumitr_mardy/google-ads-monitor/pricing",
+    "actorApiUrl": "https://apify.com/sumitr_mardy/google-ads-monitor/api",
+    "actorId": "sumitr_mardy~google-ads-monitor",
+    "_affiliate": "Empty on purpose — the owner has not registered for the Apify Affiliate Program yet.",
+    "affiliateParam": "",
+    "repoUrl": "https://github.com/sumitrmardy/google-ads-monitor-api",
+    "apifyConsoleUrl": "https://console.apify.com",
+    "apifyTokenUrl": "https://console.apify.com/settings/integrations",
+    "_price": "Pricing is pay-per-event: from $0.70 per 1,000 ads ($0.0012 on Free down to $0.0007 on Gold) plus $0.01 per competitor checked in monitor mode.",
+    "priceFromPer1k": "$0.70"
+}

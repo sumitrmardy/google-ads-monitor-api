@@ -1,0 +1,31 @@
+# Google Ads Monitor API
+
+> Monitor competitor Google Ads via Google Ads Transparency Center on Apify.
+> Extracts ad copy via color-segmented OCR, firstShown launch dates, and active countries.
+
+## Capabilities
+
+- Tracks search ads (TEXT), display banners (IMAGE), and YouTube ads (VIDEO)
+- Anchor on immutable firstShown timestamp to isolate genuinely new ads
+- Color-segmented OCR v2 reads headlines and descriptions from archived PNGs
+- Pay-per-event: $0.01 per competitor check + $0.0012 per ad ($0.70 to $1.20 per 1k)
+
+## Endpoints
+
+- Synchronous Actor run: `POST https://api.apify.com/v2/acts/sumitr_mardy~google-ads-monitor/run-sync-get-dataset-items`
+- Actor Store: https://apify.com/sumitr_mardy/google-ads-monitor
+- Pricing: https://apify.com/sumitr_mardy/google-ads-monitor/pricing
+- Repository: https://github.com/sumitrmardy/google-ads-monitor-api
+
+## Output Schema Summary
+
+- `target` (string): Input domain or advertiser ID
+- `targetType` (string): `domain` | `advertiser`
+- `format` (string): `TEXT` | `IMAGE` | `VIDEO` | `UNKNOWN`
+- `advertiserName` (string): Verified advertiser name
+- `creativeId` (string): Stable creative ID (starts with CR)
+- `firstShown` (string): ISO 8601 initial run date
+- `lastShown` (string): ISO 8601 most recent run date
+- `headline` (string): OCR-extracted or structured headline
+- `description` (string): OCR-extracted or structured body copy
+- `adUrl` (string): Link to ad on Google Ads Transparency Center

@@ -1,0 +1,30 @@
+{
+  "target": "hubspot.com",
+  "targetType": "domain",
+  "region": "US",
+  "advertiserId": "AR10072600183532683265",
+  "advertiserName": "HubSpot, Inc.",
+  "creativeId": "CR02685094814793334785",
+  "adUrl": "https://adstransparency.google.com/advertiser/AR10072600183532683265/creative/CR02685094814793334785",
+  "format": "TEXT",
+  "landingDomain": "hubspot.com",
+  "firstShown": "2026-01-29T08:00:00.000Z",
+  "lastShown": "2026-10-20T05:32:10.000Z",
+  "daysServed": 264,
+  "regions": [
+    "US",
+    "CA"
+  ],
+  "variations": 1,
+  "headline": "HubSpot for Startups - Bootstrap to Series A",
+  "description": "Partnered with top VCs and accelerators. Get exclusive startup pricing and resources.",
+  "displayUrl": "www.hubspot.com/",
+  "landingUrl": "",
+  "callToAction": "",
+  "videoUrl": "",
+  "copySource": "ocr",
+  "copyLanguage": "eng",
+  "previewImageUrl": "https://tpc.googlesyndication.com/archive/simgad/12284280382862371734",
+  "previewScriptUrl": "",
+  "checkedAt": "2026-10-20T06:48:02.980Z"
+}

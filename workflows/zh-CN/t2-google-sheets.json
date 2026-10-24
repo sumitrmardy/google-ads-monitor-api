@@ -1,0 +1,169 @@
+{
+  "name": "自动归档竞品 Google 广告及文案至 Google 表格",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# 归档竞品广告至 Google 表格\n\n自动监控竞品最新营销投放，将广告素材、OCR 识别的标题文案、落地页链接及投放区域归档至 Google 表格。\n\n## 表格所需列\n`advertiser` · `format` · `headline` · `description` · `display_url` · `first_shown` · `ad_url` · `logged_at`\n\n## 配置（仅需一次）\n\n**1. 获取 Apify Token** — https://console.apify.com/settings/integrations\n\n**2. 创建 n8n 凭据**\n凭据 → 新建 → **Header Auth**\n- 名称: `Apify API`\n- Header name: `Authorization`\n- Header value: `Bearer 你的_APIFY_TOKEN`\n\n所有 HTTP 节点均已配置指向该凭据，工作流文件中不包含任何密钥。\n\n## 计费说明\n\n按事件付费：每返回 1,000 条广告从 $0.70 起（Free 阶梯 $0.0012，Gold 阶梯低至 $0.0007），监控模式每次竞品检测 $0.01。仅返回 Google 官方 firstShown 时间确属新上线的广告。\n\n当前价格详情：https://apify.com/sumitr_mardy/google-ads-monitor/pricing\n\nActor 页面：https://apify.com/sumitr_mardy/google-ads-monitor\n模板与开源仓库：https://github.com/sumitrmardy/google-ads-monitor-api",
+        "height": 520,
+        "width": 380,
+        "color": 4
+      },
+      "id": "t2-sticky",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -60
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "t2-trigger-manual",
+      "name": "When clicking 'Execute workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9627b5e7-4050-4a0c-82a2-4de483e2921f",
+              "name": "target",
+              "value": "hubspot.com",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "t2-trigger",
+      "name": "输入竞品列表",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/sumitr_mardy~google-ads-monitor/run-sync-get-dataset-items",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ targets: [ $json.target ], mode: 'monitor' }) }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "t2-check",
+      "name": "拉取新增广告 (Apify)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        100
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "apify-api",
+          "name": "Apify API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => ({\n  json: {\n    advertiser: item.json.advertiserName || '',\n    format: item.json.format || '',\n    headline: item.json.headline || '',\n    description: item.json.description || '',\n    display_url: item.json.displayUrl || '',\n    first_shown: item.json.firstShown || '',\n    ad_url: item.json.adUrl || '',\n    logged_at: new Date().toISOString()\n  }\n}));"
+      },
+      "id": "t2-format",
+      "name": "格式化广告行数据",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData"
+        }
+      },
+      "id": "t2-sheet",
+      "name": "追加至 Google 表格",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1040,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "输入竞品列表": {
+      "main": [
+        [
+          {
+            "node": "拉取新增广告 (Apify)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "拉取新增广告 (Apify)": {
+      "main": [
+        [
+          {
+            "node": "格式化广告行数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "格式化广告行数据": {
+      "main": [
+        [
+          {
+            "node": "追加至 Google 表格",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking 'Execute workflow'": {
+      "main": [
+        [
+          {
+            "node": "输入竞品列表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

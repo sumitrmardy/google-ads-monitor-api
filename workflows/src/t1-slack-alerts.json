@@ -1,0 +1,164 @@
+{
+  "name": "__i18n.t1.name__",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "__i18n.t1.sticky__",
+        "height": 520,
+        "width": 380,
+        "color": 4
+      },
+      "id": "t1-sticky",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "t1-schedule",
+      "name": "__i18n.t1.scheduleName__",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/__link.actorId__/run-sync-get-dataset-items",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"targets\": [\"hubspot.com\", \"zoom.us\"],\n  \"mode\": \"monitor\"\n}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "t1-check",
+      "name": "__i18n.t1.checkAdsName__",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        100
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "apify-api",
+          "name": "Apify API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bc19dbf6-068e-4ef9-b4b9-5a17391518bc",
+              "leftValue": "={{ $json.creativeId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "t1-filter",
+      "name": "__i18n.t1.filterNewName__",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        800,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#competitor-ads",
+          "mode": "name"
+        },
+        "text": "=🚨 *New Google Ad Detected for {{ $json.target }}*\n*Advertiser:* {{ $json.advertiserName }}\n*Format:* {{ $json.format }}\n*Headline:* {{ $json.headline || 'N/A' }}\n*Description:* {{ $json.description || 'N/A' }}\n*Link:* {{ $json.adUrl }}",
+        "otherOptions": {}
+      },
+      "id": "t1-slack",
+      "name": "__i18n.t1.slackName__",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        100
+      ],
+      "credentials": {
+        "slackApi": {
+          "id": "slack-bot",
+          "name": "Slack Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "__i18n.t1.scheduleName__": {
+      "main": [
+        [
+          {
+            "node": "__i18n.t1.checkAdsName__",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "__i18n.t1.checkAdsName__": {
+      "main": [
+        [
+          {
+            "node": "__i18n.t1.filterNewName__",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "__i18n.t1.filterNewName__": {
+      "main": [
+        [
+          {
+            "node": "__i18n.t1.slackName__",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

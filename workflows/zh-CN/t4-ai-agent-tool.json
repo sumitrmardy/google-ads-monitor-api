@@ -1,0 +1,137 @@
+{
+  "name": "AI Agent 工具：查询竞品正在投放哪些 Google 广告？",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# 为 AI Agent 赋予竞品广告情报调研能力\n\n为大模型 Agent 配置工具，支持查询任意竞品域名或广告主 ID 的在投广告与历史素材。例如：*\"分析 Monday.com 最近在 Google 上主推哪些搜索文案？\"*\n\n## 配置（仅需一次）\n\n**1. 获取 Apify Token** — https://console.apify.com/settings/integrations\n\n**2. 创建 n8n 凭据**\n凭据 → 新建 → **Header Auth**\n- 名称: `Apify API`\n- Header name: `Authorization`\n- Header value: `Bearer 你的_APIFY_TOKEN`\n\n所有 HTTP 节点均已配置指向该凭据，工作流文件中不包含任何密钥。\n\n## OCR 与文案覆盖率\nGoogle 文本广告 96% 仅以截图图片形式存档。该工具内置基于颜色分割的高精 OCR，能精准提取标题与描述文案供 LLM 分析。\n\n## 计费说明\n\n按事件付费：每返回 1,000 条广告从 $0.70 起（Free 阶梯 $0.0012，Gold 阶梯低至 $0.0007），监控模式每次竞品检测 $0.01。仅返回 Google 官方 firstShown 时间确属新上线的广告。\n\n当前价格详情：https://apify.com/sumitr_mardy/google-ads-monitor/pricing\n\nActor 页面：https://apify.com/sumitr_mardy/google-ads-monitor\n模板与开源仓库：https://github.com/sumitrmardy/google-ads-monitor-api",
+        "height": 800,
+        "width": 420,
+        "color": 4
+      },
+      "id": "t4-sticky",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "t4-chat",
+      "name": "接收聊天消息时",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        340,
+        60
+      ],
+      "webhookId": "google-ads-analyst-agent"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "你是一个数字营销与竞品情报分析助手。当用户询问某家竞品的 Google 广告投放时，调用 Google 广告情报工具。深入分析其文案痛点诉求、主打卖点、CTA 按钮及投放国家分布，并按格式（搜索广告、图片广告、视频广告）归纳其策略。"
+        }
+      },
+      "id": "t4-agent",
+      "name": "竞品广告分析 Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        600,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "t4-model",
+      "name": "对话模型",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        520,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "在 Google 广告透明度中心中检索竞品域名或广告主 ID 的在投广告、文案及投放历史。在 `targets` 数组中传递目标。",
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/sumitr_mardy~google-ads-monitor/run-sync-get-dataset-items",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"targets\": {targets},\n  \"mode\": \"all\",\n  \"maxAdsPerTarget\": 5\n}",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "targets",
+              "description": "A JSON array of domains or advertiser IDs to check, e.g. [\"monday.com\"].",
+              "type": "json"
+            }
+          ]
+        },
+        "optimizeResponse": false
+      },
+      "id": "t4-tool",
+      "name": "Google 广告情报工具",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        760,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "apify-api",
+          "name": "Apify API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "接收聊天消息时": {
+      "main": [
+        [
+          {
+            "node": "竞品广告分析 Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "对话模型": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "竞品广告分析 Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google 广告情报工具": {
+      "ai_tool": [
+        [
+          {
+            "node": "竞品广告分析 Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
